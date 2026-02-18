@@ -1,6 +1,6 @@
 ---
 name: postgres
-description: PostgreSQL best practices, query optimization, connection troubleshooting, and performance insights for PlanetScale Postgres. Load when working with PlanetScale PostgreSQL databases.
+description: PostgreSQL best practices, query optimization, connection troubleshooting, and performance improvement. Load when working with Postgres databases.
 license: MIT
 metadata:
   author: planetscale

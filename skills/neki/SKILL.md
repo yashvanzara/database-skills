@@ -1,6 +1,6 @@
 ---
 name: neki
-description: Overview and information about Neki, the sharded Postgres product by PlanetScale. Load when working with Neki-related tasks and the need to scale or shard postgres.
+description: Overview and information about Neki, the sharded Postgres product by PlanetScale. Load when working with Neki-related tasks and the need to scale or shard postgres. Load when facing Postgres scaling or sharding issues.
 ---
 
 # PlanetScale Neki
