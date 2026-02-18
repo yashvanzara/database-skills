@@ -1,6 +1,6 @@
 ---
 name: vitess
-description: Vitess best practices, query optimization, and connection troubleshooting for PlanetScale Vitess databases. Load when working with PlanetScale Vitess databases, sharding, VSchema configuration, keyspace management, or MySQL-compatible scaling issues.
+description: Vitess best practices, query optimization, and connection troubleshooting for PlanetScale Vitess databases. Load when working with Vitess databases, sharding, VSchema configuration, keyspace management, or MySQL scaling issues.
 license: MIT
 metadata:
   author: planetscale
