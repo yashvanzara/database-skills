@@ -6,11 +6,21 @@ Database-focused skills for AI coding assistants. Each skill lives in its own su
 
 ## Installation
 
+### skills.sh
+
 ```bash
 npx skills add planetscale/database-skills
 ```
 
-see [skills.sh](https://skills.sh) for more info.
+See [skills.sh](https://skills.sh) for more info.
+
+### Cursor plugin
+
+In Cursor chat, add this repository as a plugin:
+
+```bash
+/add-plugin database-skills
+```
 
 ## Available Skills
 
@@ -34,6 +44,8 @@ Vitess best practices, query optimization, and connection troubleshooting for Pl
 
 ```
 database-skills/
+├── .cursor-plugin/
+│   └── plugin.json
 ├── README.md
 └── skills/
     ├── mysql/
