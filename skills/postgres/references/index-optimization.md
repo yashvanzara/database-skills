@@ -1,7 +1,7 @@
 ---
 title: Index Optimization Queries
 description: Index audit queries
-tags: postgres, indexes, unused-indexes, duplicate-indexes, optimization
+tags: postgres, indexes, unused-indexes, duplicate-indexes, invalid-indexes, bloat, HOT, write-amplification, planner-tuning, optimization
 ---
 
 # Index Optimization
@@ -45,6 +45,8 @@ GROUP BY schemaname, tablename,
 HAVING count(*) > 1;
 ```
 
+> **Warning:** Confirm with a human before dropping duplicate indexes. Some "duplicates" differ in practical use (operator classes, collations, predicates, sort order) and may be required for critical workloads.
+
 ## Identify Invalid Indexes
 
 Failed `CREATE INDEX CONCURRENTLY` builds leave INVALID indexes maintained on every write but never used for reads.
@@ -55,7 +57,7 @@ SELECT indexrelname FROM pg_stat_user_indexes s
 JOIN pg_index i ON s.indexrelid = i.indexrelid WHERE NOT i.indisvalid;
 ```
 
-**Always confirm with a human before dropping or removing any indexes identified by the queries above.** Even indexes with 0 scans may be needed for infrequent but critical queries, and stats may have been reset recently.
+> **Warning:** Confirm with a human before dropping invalid indexes. Validate index health and workload impact first, then drop/rebuild during a controlled window.
 
 ## Per-table Index Count Guidelines
 
@@ -75,7 +77,14 @@ ORDER BY count(*) DESC;
 ## Index Bloat Detection
 
 VACUUM removes dead tuples but does **not** reclaim empty index page space — only `REINDEX` or `pg_repack` compacts pages.
-Detect with pgstattuple (`CREATE EXTENSION IF NOT EXISTS pgstattuple`): `SELECT avg_leaf_density FROM pgstatindex('my_index')` — below 70% = significant bloat, healthy = 80-90%+. Remediation: `REINDEX CONCURRENTLY` (PG 12+) for index-only bloat; `pg_repack` for table+index (requires PK and ~2x disk space).
+Detect with `pgstattuple`:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgstattuple;
+SELECT avg_leaf_density FROM pgstatindex('my_index');
+```
+
+Below 70% = significant bloat, healthy = 80-90%+. Remediation: `REINDEX CONCURRENTLY` (PG 12+) for index-only bloat; `pg_repack` for table+index (requires PK and ~2x disk space).
 
 ## HOT Update Monitoring
 
@@ -90,7 +99,9 @@ FROM pg_stat_user_tables WHERE n_tup_upd > 0 ORDER BY n_tup_upd DESC;
 
 ## Write Amplification
 
-Each index adds linear overhead to every write. Percona PG 17 benchmarks: 7→39 indexes = **58% throughput drop**. Mitigate with `wal_compression = 'lz4'` (PG 15+) and larger `max_wal_size` (10-100+ GB).
+Each additional index adds write-path overhead because every INSERT/UPDATE/DELETE must maintain more index entries. In a [Percona PG 17.4 over-indexing benchmark](https://www.percona.com/blog/benchmarking-postgresql-the-hidden-cost-of-over-indexing/), moving from 7 to 39 indexes showed a **58% throughput drop**.
+
+To reduce WAL volume from this extra write activity, enable `wal_compression` (available before PG 15; `lz4` and `zstd` options are PG 15+). Tune `max_wal_size` separately to reduce checkpoint frequency under sustained write load.
 
 ## Planner Tuning
 
